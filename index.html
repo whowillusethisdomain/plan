@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방학 계획표</title>
+    <style>
+        /* Add your custom styles here */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .checked {
+            background-color: #99ff99; /* Add your desired checked color */
+        }
+
+        .planItem {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checkbox {
+            margin-left: 10px;
+        }
+
+        .planText {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .timeColumn {
+            font-weight: bold;
+        }
+
+        .dayColumn {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>방학 계획표</h1>
+    <button onclick="savePlans()">저장</button>
+    <input type="file" id="fileInput" accept=".json">
+    <button onclick="loadPlans()">불러오기</button>
+    <table id="calendar"></table>
+    <input type="text" id="timeInput" placeholder="시간을 입력하세요 (예: 13:30)">
+    <button onclick="addTime()">추가</button>
+    <script>
+        isModified = false;
+
+         function addTime() {
+            
+            var timeInput = document.getElementById("timeInput");
+            var time = timeInput.value.trim();
+
+            if (time !== "") {
+                var selectedCell = document.querySelector(".selected");
+
+                if (selectedCell) {
+                    var planItem = document.createElement("div");
+                    planItem.classList.add("planItem");
+                    planItem.onclick = function () {
+                        toggleCheck(this);
+                    };
+
+                    var planTextElement = document.createElement("span");
+                    planTextElement.classList.add("planText");
+                    planTextElement.textContent = time;
+
+                    var checkboxElement = document.createElement("input");
+                    checkboxElement.setAttribute("type", "checkbox");
+                    checkboxElement.classList.add("checkbox");
+
+                    planItem.appendChild(planTextElement);
+                    planItem.appendChild(checkboxElement);
+
+                    selectedCell.innerHTML = "";
+                    selectedCell.appendChild(planItem);
+
+                    // Add position information
+                    var row = selectedCell.parentNode.rowIndex; // Include the header row
+                    var cell = selectedCell.cellIndex;
+                    planItem.dataset.row = row;
+                    planItem.dataset.cell = cell;
+                }
+
+                timeInput.value = "";
+                isModified = true; // Set modified flag to true
+            }
+        }
+
+        function toggleCheck(planItem) {
+            planItem.classList.toggle("checked");
+
+            var checkbox = planItem.querySelector(".checkbox");
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+
+            isModified = true; // Set modified flag to true
+        }
+
+            savePlans(); // Save plans after toggling check
+
+
+        function generateCalendar() {
+            var calendar = document.getElementById("calendar");
+            var headerRow = calendar.insertRow();
+            headerRow.innerHTML = "<th class='dayColumn'></th><th class='dayColumn'>1월 5일</th><th class='dayColumn'>1월 6일</th><th class='dayColumn'>1월 7일</th><th class='dayColumn'>1월 8일</th><th class='dayColumn'>1월 9일</th><th class='dayColumn'>1월 10일</th><th class='dayColumn'>1월 11일</th><th class='dayColumn'>1월 12일</th><th class='dayColumn'>1월 13일</th><th class='dayColumn'>1월 14일</th><th class='dayColumn'>1월 15일</th><th class='dayColumn'>1월 16일</th><th class='dayColumn'>1월 17일</th><th class='dayColumn'>1월 18일</th><th class='dayColumn'>1월 19일</th><th class='dayColumn'>1월 20일</th><th class='dayColumn'>1월 21일</th><th class='dayColumn'>1월 22일</th><th class='dayColumn'>1월 23일</th><th class='dayColumn'>1월 24일</th><th class='dayColumn'>1월 25일</th><th class='dayColumn'>1월 26일</th><th class='dayColumn'>1월 27일</th><th class='dayColumn'>1월 28일</th><th class='dayColumn'>1월 29일</th><th class='dayColumn'>1월 30일</th><th class='dayColumn'>1월 31일</th><th class='dayColumn'>2월 1일</th><th class='dayColumn'>2월 2일</th><th class='dayColumn'>2월 3일</th><th class='dayColumn'>2월 4일</th><th class='dayColumn'>2월 5일</th><th class='dayColumn'>2월 6일</th><th class='dayColumn'>2월 7일</th><th class='dayColumn'>2월 8일</th><th class='dayColumn'>2월 9일</th><th class='dayColumn'>2월 10일</th><th class='dayColumn'>2월 11일</th><th class='dayColumn'>2월 12일</th><th class='dayColumn'>2월 13일</th><th class='dayColumn'>2월 14일</th>"; // First column for time
+
+
+            for (var i = 0; i < 48; i++) {
+                var monthRow = calendar.insertRow();
+                for (var j = 0; j < 42; j++) {
+                    var cell = monthRow.insertCell();
+                    if (j === 0) {
+                        var time = i * 30; // 30 minutes for each hour
+                        var hours = Math.floor(time / 60);
+                        var minutes = time % 60;
+                        var timeLabel = (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+                        cell.innerHTML = timeLabel;
+                        cell.classList.add("timeColumn");
+                    }
+                    cell.onclick = function () {
+                        // Clear previous selected cell
+                        var selectedCell = document.querySelector(".selected");
+                        if (selectedCell) {
+                            selectedCell.classList.remove("selected");
+                        }
+
+                        // Highlight the clicked cell
+                        this.classList.add("selected");
+                    };
+                }
+            }
+
+            // Simulate some plans with "checked" in their IDs
+            var plansWithCheck = document.querySelectorAll(".planItem[id*='checked']");
+            plansWithCheck.forEach(function (planItem) {
+                toggleCheck(planItem);
+            });
+        }
+
+        function savePlans() {
+   
+            if (isModified) {
+                var plans = [];
+                var planItems = document.querySelectorAll(".planItem");
+
+                planItems.forEach(function (planItem) {
+                    var plan = {
+                        time: planItem.querySelector(".planText").textContent,
+                        checked: planItem.classList.contains("checked"),
+                        row: parseInt(planItem.dataset.row), // Increment row by 1
+                        cell: parseInt(planItem.dataset.cell) // Increment cell by 1
+                    };
+                    plans.push(plan);
+                });
+
+                var jsonContent = JSON.stringify(plans);
+                var blob = new Blob([jsonContent], { type: "application/json" });
+                var url = URL.createObjectURL(blob);
+
+                var a = document.createElement("a");
+                a.href = url;
+                a.download = "plans.json";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+               isModified = false; // Reset modified flag to false after saving
+            }
+        }
+
+        function loadPlans() {
+            var fileInput = document.getElementById("fileInput");
+            var file = fileInput.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var content = e.target.result;
+
+                    console.log(content); // Debugging line
+
+                    try {
+                        var plans = JSON.parse(content);
+
+                        plans.forEach(function (plan) {
+                            var time = plan.time;
+                            var checked = plan.checked;
+                            var row = plan.row;
+                            var cell = plan.cell;
+
+                            var selectedRow = document.querySelector("table").rows[row];
+                            var selectedCell = selectedRow.cells[cell];
+                            var planItem = document.createElement("div");
+                            planItem.classList.add("planItem");
+                            if (checked) {
+                                planItem.classList.add("checked");
+                            }
+                            planItem.onclick = function () {
+                                toggleCheck(this);
+                            };
+
+                            var planTextElement = document.createElement("span");
+                            planTextElement.classList.add("planText");
+                            planTextElement.textContent = time;
+
+                            var checkboxElement = document.createElement("input");
+                            checkboxElement.setAttribute("type", "checkbox");
+                            checkboxElement.classList.add("checkbox");
+                            checkboxElement.checked = checked;
+
+                            planItem.appendChild(planTextElement);
+                            planItem.appendChild(checkboxElement);
+
+                            selectedCell.innerHTML = "";
+                            selectedCell.appendChild(planItem);
+
+                            // Set position information
+                            planItem.dataset.row = row;
+                            planItem.dataset.cell = cell;
+                        });
+
+                        alert("계획이 불러와졌습니다.");
+                    } catch (error) {
+                        console.error(error);
+                        alert("잘못된 JSON 형식입니다.");
+                    }
+                };
+
+                reader.readAsText(file);
+            }
+        }
+
+        generateCalendar();
+    </script>
+</body>
+</html>
